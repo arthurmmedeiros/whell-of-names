@@ -5,7 +5,10 @@ import WheelOfFortune from '../src/pages/WheelOfFortune';
 function App() {
   return (
     <div className="App">
-      <WheelOfFortune/>
+      
+        <WheelOfFortune/>
+      
+      
     </div>
   );
 }

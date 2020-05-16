@@ -1,11 +1,16 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import "./style.css";
+import { Input, InputGroup, InputGroupAddon, InputGroupText} from 'reactstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlus, faTimes } from '@fortawesome/free-solid-svg-icons'
+import { v4 as uuidv4 } from 'uuid';
 const randomColor = require('randomcolor');
 
 interface IWheelItem {
   description: string;
   color: string;
   rotationValue?: number;
+  id: string;
 }
 
 function rand(min: number, max: number): number {
@@ -21,8 +26,25 @@ const degree = rand(0, 360);
 const WheelOfFortune: React.FC = () => {
   const [circleClass, setCircleClass] = useState("circle");
   const [wheelItems, setWheelItems] = useState<IWheelItem[]>([]);
+  const [inputText, setInputText] = useState<string>('');
+  const [pageHeight, setPageHeight] = useState<number>(0);
   
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+
+
+  useEffect(() => {
+    //document.getElementById("cont")?.setAttribute('height', '100vh');
+    function updateHeight(){
+      setPageHeight(document.body.scrollHeight);
+      console.log(document.body.scrollHeight);
+    }
+    window.addEventListener('scroll', updateHeight);
+
+    return () => {window.removeEventListener('scroll', updateHeight);}
+  },[]);
+
+
 
   //rotation
   function startRotation() {
@@ -32,22 +54,27 @@ const WheelOfFortune: React.FC = () => {
     }, Math.floor(Math.random() * 10000) + 1);
   }
 
-  function addNewItem() {
-    startRotation();
-    let newWheelItems: IWheelItem[] = [
-      ...wheelItems,
-      { description: "test", color: randomColor() },
-    ];
-
-    newWheelItems = newWheelItems.map((item) => ({
-      description: item.description,
-      color: item.color,
-      rotationValue: 360 / newWheelItems.length,
-    }));
-
-    setWheelItems(newWheelItems);
-    console.log(newWheelItems);
+  function addNewItem(text: string) {
+    if(text !== ''){
+      setInputText('');
+      startRotation();
+      let newWheelItems: IWheelItem[] = [
+        ...wheelItems,
+        { 
+          description: text, 
+          color: randomColor({
+            luminosity: 'dark', 
+            format: 'rgba',
+            alpha: '0.5'
+          }), 
+          id:uuidv4() },
+      ];
+  
+      setWheelItems(newWheelItems);
+      console.log(newWheelItems);
+    }
   }
+
 
   const drawSlice = useCallback((deg: number, color: string) => {
     if (!canvasRef.current) {
@@ -92,16 +119,54 @@ const WheelOfFortune: React.FC = () => {
     drawSlices(wheelItems)
   },[drawSlices, wheelItems]);
 
+  const handleChangeInput = (e: any) => {setInputText(e)};
 
+  function removeItem(id: string) {
+    const filteredWheel: IWheelItem[] = wheelItems.filter((item) => item.id !== id); 
+
+    setWheelItems(filteredWheel);
+    //console.log(newWheelItems);
+  }
 
   return (
-    <div>
-      <div id="wheel" className={circleClass}>
-        <canvas ref={canvasRef} width="400" height="400" />
+    <div id="cont" className="container" style={{height: pageHeight > 0 ? `${pageHeight}px`: '100vh'}}>
+      <h1 className="my-5">Wheel of fortune</h1>
+      <div className="mb-5 wheel-container">
+        <div id="wheel" 
+          className={circleClass}
+          onClick={startRotation}>
+          <canvas id="canvas" ref={canvasRef}  height="300" />
+        </div>
       </div>
-      <button type="button" className="spin-button" onClick={addNewItem}>
-        Spin
-      </button>
+      <div className="players-container">
+        <p className="text-left">Add names to the Wheel</p>
+        <InputGroup>
+          <Input value={inputText} onChange={(e) => handleChangeInput(e.target.value)}/>
+          <InputGroupAddon addonType="append" onClick={() => addNewItem(inputText)}>
+            <InputGroupText>
+              <FontAwesomeIcon color="#0D4077" icon={faPlus}/>
+            </InputGroupText>
+          </InputGroupAddon>
+        </InputGroup> 
+        <div id="players-list" className="players-list mt-3">
+          <ul>
+            {
+              wheelItems.length > 0 &&
+              wheelItems.map((item) =>{
+                return <li className="d-flex justify-content-between my-3"
+                  style={{color: item.color, fontWeight: 'bold'}}
+                  key={item.id}>
+                  {item.description}
+                  <FontAwesomeIcon 
+                    color={item.color} 
+                    icon={faTimes}
+                    onClick={() => removeItem(item.id)}/>
+                </li>
+              })
+            }
+          </ul>
+        </div>
+      </div>
     </div>
   );
 };

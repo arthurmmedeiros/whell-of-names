@@ -160,6 +160,7 @@ body{text-align:center;}
   display:inline-block;
   position:relative;
   overflow:hidden;
+  margin-bottom: 1rem;
 }
 #wheel:after{
   content:"";
@@ -172,4 +173,32 @@ body{text-align:center;}
   height:10px;
   margin-left:-7px;
   transform: rotate(45deg)
+}
+
+/* #canvas{
+  width: 100%;
+  
+} */
+
+.container {
+  text-align: center;
+  background: rgba(91,121,137, 0.1);
+  width: 100vw;
+  /* height: 100vh; */
+  padding: 1rem;
+}
+
+.wheel-container{
+  position: relative; 
+  display: flex;
+  flex-flow: column;
+  justify-content: center;
+  align-items: center;
+
+}
+
+#players-list ul, #players-list li{
+  list-style: none;
+  margin:0;
+  padding: 0 0.45rem 0 0.2rem;
 }

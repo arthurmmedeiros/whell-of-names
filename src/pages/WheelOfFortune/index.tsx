@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import "./style.css";
-import { Input, InputGroup, InputGroupAddon, InputGroupText} from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus, faTimes } from '@fortawesome/free-solid-svg-icons'
 import { v4 as uuidv4 } from 'uuid';
@@ -57,7 +56,7 @@ const WheelOfFortune: React.FC = () => {
   function addNewItem(text: string) {
     if(text !== ''){
       setInputText('');
-      startRotation();
+      //startRotation();
       let newWheelItems: IWheelItem[] = [
         ...wheelItems,
         { 
@@ -65,7 +64,7 @@ const WheelOfFortune: React.FC = () => {
           color: randomColor({
             luminosity: 'dark', 
             format: 'rgba',
-            alpha: '0.5'
+            alpha: 1
           }), 
           id:uuidv4() },
       ];
@@ -76,7 +75,7 @@ const WheelOfFortune: React.FC = () => {
   }
 
 
-  const drawSlice = useCallback((deg: number, color: string) => {
+  const drawSlice = useCallback((deg: number, color: string, text:string) => {
     if (!canvasRef.current) {
         return;
       }
@@ -90,10 +89,13 @@ const WheelOfFortune: React.FC = () => {
       if (ctx) {
         ctx.beginPath();
         ctx.fillStyle = color;
+        //ctx.fillText(text, center, deg2rad(deg));
+      
         ctx.moveTo(center, center);
         ctx.arc(center, center, width / 2, deg2rad(deg), deg2rad(deg + sliceDeg));
         ctx.lineTo(center, center);
         ctx.fill();
+      
       }
   },[wheelItems.length])
 
@@ -109,7 +111,7 @@ const WheelOfFortune: React.FC = () => {
 
     let newDeg = degree;
     for (let i=0; i < wheelItems.length; i++){
-        drawSlice(newDeg, wheelItems[i].color);
+        drawSlice(newDeg, wheelItems[i].color, wheelItems[i].description);
         newDeg += (360/wheelItems.length);
     }
   },[drawSlice]);
@@ -130,8 +132,8 @@ const WheelOfFortune: React.FC = () => {
 
   return (
     <div id="cont" className="container" style={{height: pageHeight > 0 ? `${pageHeight}px`: '100vh'}}>
-      <h1 className="my-5">Wheel of fortune</h1>
-      <div className="mb-5 wheel-container">
+      <h1 className="mt-5 mb-3">Wheel of fortune</h1>
+      <div className="mb-3 wheel-container">
         <div id="wheel" 
           className={circleClass}
           onClick={startRotation}>
@@ -139,21 +141,24 @@ const WheelOfFortune: React.FC = () => {
         </div>
       </div>
       <div className="players-container">
-        <p className="text-left">Add names to the Wheel</p>
-        <InputGroup>
-          <Input value={inputText} onChange={(e) => handleChangeInput(e.target.value)}/>
-          <InputGroupAddon addonType="append" onClick={() => addNewItem(inputText)}>
-            <InputGroupText>
-              <FontAwesomeIcon color="#0D4077" icon={faPlus}/>
-            </InputGroupText>
-          </InputGroupAddon>
-        </InputGroup> 
-        <div id="players-list" className="players-list mt-3">
+    
+        <div className="custom-input-group">
+          <input 
+            type="text" 
+            id="input-name" 
+            placeholder="Insert a new name"
+            value={inputText} onChange={(e) => handleChangeInput(e.target.value)}/>
+          <div className="plus-box" onClick={() => addNewItem(inputText)}>
+            <FontAwesomeIcon className="plus-icon" icon={faPlus}/>
+          </div>
+        </div>
+        <div id="players-list" className="players-list mt-3 mb-4">
           <ul>
             {
               wheelItems.length > 0 &&
               wheelItems.map((item) =>{
-                return <li className="d-flex justify-content-between my-3"
+                return <li 
+                  className="d-flex align-items-center my-li justify-content-between my-3"
                   style={{color: item.color, fontWeight: 'bold'}}
                   key={item.id}>
                   {item.description}
